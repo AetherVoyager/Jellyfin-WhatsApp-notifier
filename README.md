@@ -40,8 +40,9 @@ CopyReplace `your_whatsapp_group_id` with the actual ID of your WhatsApp group.
 ## Usage
 
 1. Start the server:
-npm start
-Copy
+```cmd
+npm run start
+```
 2. The first time you run the app, you'll need to scan a QR code to authenticate the WhatsApp session.
 
 3. Configure your Jellyfin server to send webhook notifications to `http://your-server-ip:3000/webhook`

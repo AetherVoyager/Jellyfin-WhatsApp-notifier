@@ -24,12 +24,14 @@ This application serves as a bridge between Jellyfin Media Server and WhatsApp, 
 ## Installation
 
 1. Clone this repository:
-   '''sh
+```cmd
 git clone https://github.com/Myjellyfin/Jellyfin-WhatsApp-notifier.git
-cd jellyfin-whatsapp-notifier
-Copy
-3. Install dependencies:
+cd Jellyfin-Whatsapp-notifier
+```
+2. Install dependencies:
+```cmd
 npm install
+```
 Copy
 4. Create a `.env` file in the root directory with the following content:
 PORT=3000
@@ -58,11 +60,6 @@ Copy
 - **Authentication Success**: `Successful Login\n{NotificationUsername} Logged in`
 - **Authentication Failure**: `Failed Login Attempt\n{Username} login attempt failed`
 
-## Troubleshooting
-
-- If you're not receiving notifications, check the console output for any error messages.
-- Ensure that your server is accessible from your Jellyfin server if they're on different networks.
-- Verify that the WhatsApp session is connected by checking the console logs.
 
 ## Contributing
 

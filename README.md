@@ -32,8 +32,7 @@ cd Jellyfin-Whatsapp-notifier
 ```cmd
 npm install
 ```
-Copy
-4. Create a `.env` file in the root directory with the following content:
+3. Create a `.env` file in the root directory with the following content:
 PORT=3000
 WHATSAPP_GROUP_ID=your_whatsapp_group_id
 CopyReplace `your_whatsapp_group_id` with the actual ID of your WhatsApp group.

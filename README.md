@@ -24,13 +24,14 @@ This application serves as a bridge between Jellyfin Media Server and WhatsApp, 
 ## Installation
 
 1. Clone this repository:
-git clone https://github.com/yourusername/jellyfin-whatsapp-notifier.git
+   '''sh
+git clone https://github.com/Myjellyfin/Jellyfin-WhatsApp-notifier.git
 cd jellyfin-whatsapp-notifier
 Copy
-2. Install dependencies:
+3. Install dependencies:
 npm install
 Copy
-3. Create a `.env` file in the root directory with the following content:
+4. Create a `.env` file in the root directory with the following content:
 PORT=3000
 WHATSAPP_GROUP_ID=your_whatsapp_group_id
 CopyReplace `your_whatsapp_group_id` with the actual ID of your WhatsApp group.

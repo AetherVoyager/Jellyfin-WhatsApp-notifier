@@ -10,6 +10,10 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 let client;
+(async () => {
+  const { Client } = await import('@myno_21/imdb-scraper');
+  imdbClient = new Client();
+})();
 
 const initializeWhatsApp = async () => {
   try {
@@ -30,11 +34,6 @@ const initializeWhatsApp = async () => {
         console.log('Client is authenticated and ready to send messages.');
         listGroups();
       }
-    });
-
-    client.onDisconnected((reason) => {
-      console.log('Client was disconnected', reason);
-      initializeWhatsApp().catch(console.error);
     });
 
   } catch (error) {
@@ -120,42 +119,81 @@ app.post('/webhook', async (req, res) => {
 
   let message;
 
-  switch (data.NotificationType) {
-    case 'ItemAdded':
-      message = `New ${data.ItemType} Added\nName: ${data.Name}\nRuntime: ${data.RunTime}\nPremiere Date: ${data.PremiereDate}`;
-      break;
-    case 'PlaybackStart':
-      message = `${data.NotificationUsername} started watching\n${data.Name}`;
-      break;
-    case 'PlaybackStop':
-      message = `${data.NotificationUsername} stopped watching\n${data.Name}`;
-      break;
-    case 'AuthenticationSuccess':
-      message = `Successful Login\n${data.NotificationUsername} Logged in`;
-      break;
-    case 'AuthenticationFailure':
-      message = `Failed Login Attempt\n${data.Username} login attempt failed`;
-      break;
-    default:
-      console.log(`Unsupported notification type: ${data.NotificationType}`);
-      return res.status(400).json({ error: 'Unsupported notification type' });
-  }
+  if (data.NotificationType === 'ItemAdded' && data.ItemType === 'Movie') {
+    try {
+      const imdbId = data.Provider_imdb;
+      const movie = await imdbClient.getMovie(imdbId);
 
-  try {
-    if (!client || !client.isConnected()) {
-      throw new Error('WhatsApp client not initialized or not connected');
+      message = `> 🎥 *New Movie Added*
+
+🎬 *Name*: ${data.Name}
+⌛ *Runtime*: ${data.RunTime}
+📅 *Release*: ${data.PremiereDate}
+📊 *Genres*: ${movie.genres.join(', ')}
+⭐️ *IMDb Rating*: ${movie.imdbRating}
+🎞️ *Plot*: ${movie.description}`;
+
+      if (!client || !client.isConnected()) {
+        throw new Error('WhatsApp client not initialized or not connected');
+      }
+
+      const chatId = process.env.WHATSAPP_GROUP_ID;
+      
+      // Send poster image with caption
+      if (movie.imageURL) {
+        await client.sendImage(
+          chatId,
+          movie.imageURL,
+          'movie-poster',
+          message
+        );
+      } else {
+        // If no poster is available, send text message
+        await client.sendText(chatId, message);
+      }
+
+      console.log('Movie notification sent successfully');
+      res.status(200).json({ success: true, message: 'Movie notification sent' });
+    } catch (error) {
+      console.error('Error processing movie notification:', error);
+      res.status(500).json({ error: 'Failed to send movie notification', details: error.message });
+    }
+  } else {
+    // Handle other notification types
+    switch (data.NotificationType) {
+      case 'PlaybackStart':
+        message = `${data.NotificationUsername} started watching\n${data.Name}`;
+        break;
+      case 'PlaybackStop':
+        message = `${data.NotificationUsername} stopped watching\n${data.Name}`;
+        break;
+      case 'AuthenticationSuccess':
+        message = `Successful Login\n${data.NotificationUsername} Logged in`;
+        break;
+      case 'AuthenticationFailure':
+        message = `Failed Login Attempt\n${data.Username} login attempt failed`;
+        break;
+      default:
+        console.log(`Unsupported notification type: ${data.NotificationType}`);
+        return res.status(400).json({ error: 'Unsupported notification type' });
     }
 
-    const chatId = process.env.WHATSAPP_GROUP_ID;
-    console.log('Attempting to send message to:', chatId);
-    console.log('Message content:', message);
+    try {
+      if (!client || !client.isConnected()) {
+        throw new Error('WhatsApp client not initialized or not connected');
+      }
 
-    const sentMessage = await client.sendText(chatId, message);
-    console.log('Message sent successfully:', sentMessage);
-    res.status(200).json({ success: true, message: 'Notification sent' });
-  } catch (error) {
-    console.error('Detailed error:', error);
-    res.status(500).json({ error: 'Failed to send notification', details: error.message });
+      const chatId = process.env.WHATSAPP_GROUP_ID;
+      console.log('Attempting to send message to:', chatId);
+      console.log('Message content:', message);
+
+      const sentMessage = await client.sendText(chatId, message);
+      console.log('Message sent successfully:', sentMessage);
+      res.status(200).json({ success: true, message: 'Notification sent' });
+    } catch (error) {
+      console.error('Detailed error:', error);
+      res.status(500).json({ error: 'Failed to send notification', details: error.message });
+    }
   }
 });
 
